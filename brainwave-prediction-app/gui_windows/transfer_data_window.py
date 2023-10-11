@@ -35,7 +35,7 @@ def transfer_data_window(window1):
     
     # Window
     transfer_data_window = sg.Window("Transfer Data", transfer_data_layout, size=(
-        1200, 800), element_justification='c', finalize=True) 
+        1200, 800), element_justification='c', finalize=True, grab_anywhere=True) 
 
     # Event loop    
     while True:
@@ -55,3 +55,4 @@ def transfer_data_window(window1):
 
     window1.un_hide()
     transfer_data_window.close()
+
