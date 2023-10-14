@@ -19,17 +19,25 @@ def transfer_data_window(window1):
         [sg.Text("Transfer Data Screen", font=('Arial', title_font_size), justification='c', auto_size_text=True)]    
     ]
 
+    user_data = [
+        [sg.Text('Host:\t   '), sg.Input(key='-dir_input-')],
+        [sg.Text('User Name:'), sg.Input(key='-dir_input-')],
+        [sg.Text('Private Key:'), sg.Input(key='-dir_input-')],
+        [sg.Text('Password:  '), sg.Input(key='-dir_input-')],
+    ]    
+
     # Contains items for directory input of user in the window
     directory_input_message_size = 13   # adjut directoy input message size
     directory_input = [
-        [sg.Text("Select a locally stored directory for transfer...", font=('Arial', directory_input_message_size))],
+        [sg.Text("Select a directory for transfer...", font=('Arial', directory_input_message_size))],
         [sg.Text('Folder Path:'), sg.Input(key='-dir_input-'), sg.FolderBrowse(target='-dir_input-')],
     ]
 
     # Combined window layout
     transfer_data_layout = [
         [sg.Column(top_left), sg.Push(), sg.Column(top_center, pad=((0, 175), 0)), sg.Push(), ],
-        [sg.Column(directory_input, pad=(0, (125, 25)))],
+        [sg.Column(user_data, pad=(0, (25, 25)))],
+        [sg.Column(directory_input, pad=(0, (25, 25)))],
         [sg.Button("Transfer", size=(10,1))]    # Button for executing transfer       
     ]    
     
