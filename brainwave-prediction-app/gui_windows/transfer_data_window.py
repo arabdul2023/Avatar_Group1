@@ -26,7 +26,7 @@ def transfer_data_window(window1):
         [sg.Text('User Name:'), sg.Input('', key='-name_input-', enable_events=True)],
         [sg.Text('Private Key:'), sg.Input('', key='-key_input-', password_char='*', enable_events=True)],
         [sg.Text('Password:  '), sg.Input('', key='-pass_input-', password_char='*', enable_events=True)],
-        [sg.Button('OK', size=(10,1), pad=(5, 5), disabled=True, key='-ok_button-'),
+        [sg.Button('Login', size=(10,1), pad=(5, 5), disabled=True, key='-login_button-'),
             sg.Button('Disconnect', size=(10,1), pad=(5,5), disabled=True, key='-disconnect_button-'),
             sg.Button('Clear', key='-clear_login_data_button-', size=(10,1))],
         [sg.Text('Disconnected', key='-connectivity_text-', font='Arial', text_color='dark red')]
@@ -67,9 +67,9 @@ def transfer_data_window(window1):
     # Functions related to Login Frame events
     def check_login_fields():
         if (values['-host_input-'] != '') and (values['-name_input-'] != '') and (values['-key_input-'] != '') and (values['-pass_input-'] != ''):
-            transfer_data_window['-ok_button-'].update(disabled=False)
+            transfer_data_window['-login_button-'].update(disabled=False)
         else:
-            transfer_data_window['-ok_button-'].update(disabled=True)
+            transfer_data_window['-login_button-'].update(disabled=True)
     def logged_in_successfully():
         transfer_data_window['-connectivity_text-'].update('Connected', text_color='dark green')
         transfer_data_window['-dir_input-'].update(disabled=False)
@@ -78,7 +78,7 @@ def transfer_data_window(window1):
         transfer_data_window['-disconnect_button-'].update(disabled=False)
         transfer_data_window['-clear_login_data_button-'].update(disabled=True)
     def attempt_login():
-        sg.popup('Logged in')
+        #sg.popup('Logged in')
         login_successful = True
         if login_successful:
             logged_in_successfully()
@@ -89,7 +89,7 @@ def transfer_data_window(window1):
         transfer_data_window['-name_input-'].update('')
         transfer_data_window['-key_input-'].update('')
         transfer_data_window['-pass_input-'].update('')
-        transfer_data_window['-ok_button-'].update(disabled=True)
+        transfer_data_window['-login_button-'].update(disabled=True)
         transfer_data_window['-host_input-'].set_focus()
     def disconnected():
         login_successful=False
@@ -128,9 +128,8 @@ def transfer_data_window(window1):
         transfer_data_window['-open_button-'].update(disabled=True)
  
     def transfer_file():
-        sg.popup('Transfered')
-        
-        
+        print('ran')
+         
     # Event loop    
     while True:
         event, values = transfer_data_window.read()
@@ -139,7 +138,7 @@ def transfer_data_window(window1):
             sys.exit()
         elif event in ('-host_input-','-name_input-','-key_input-','-pass_input-'):
             check_login_fields()
-        elif event == '-ok_button-':
+        elif event == '-login_button-':
             attempt_login()
         elif event == '-disconnect_button-':
             disconnected()
@@ -152,10 +151,14 @@ def transfer_data_window(window1):
         elif event == '-clear_directory_button-':
             clear_directory_field()
         elif event == '-transfer_button-':
-            transfer_file()
+            result = sg.popup('Do you want to proceed?', title='Verify', button_type=sg.POPUP_BUTTONS_OK_CANCEL)
+            if result == 'OK':
+                transfer_file()
         elif event == "-exit_button-":   # return to start screen
-            file.close()
-            break
+            result = sg.popup('Do you want to proceed?', title='Verify', button_type=sg.POPUP_BUTTONS_OK_CANCEL)
+            if result == 'OK':
+                file.close()
+                break        
 
     window1.un_hide()
     transfer_data_window.close()
