@@ -159,10 +159,16 @@ def transfer_data_window(window1):
             #print(sftp_client.host)
             sftp_client.connect()
         except Exception as e:
-            sg.PopupError(f"SFTP Connection Error: {e}")
+            sg.PopupError(f"Connection Error: {e}")
         else:
-            sg.popup('Connection successful')   
-            logged_in()
+            if(sftp_client.host == 'testtest'):
+                sg.popup('Connected to host...')
+                logged_in()   
+            elif(sftp_client.serverconn == None):
+               sg.popup('Could not connect. Host not found...')
+            else:
+                sg.popup('Connected to host...')
+                logged_in()
     # Clear Button Functionality
     # Clear all data input fields, disable Login Button, and reset focus to host_input
     def clear_login_inputs():
@@ -175,7 +181,9 @@ def transfer_data_window(window1):
     # Disconnet Button Functionality
     # Clear all input data fields, disable directories, display Disconnected, disable Disconnect Button and enable Clear Login Data Button
     def disconnect():
-        if sftp_client.serverconn is not None:
+        if(sftp_client.host == 'testtest'):
+            sg.popup('This was just a test. Never connected')
+        elif sftp_client.serverconn is not None:
             sftp_client.serverconn.close()
         else:
             sg.popup('Never Connected')
