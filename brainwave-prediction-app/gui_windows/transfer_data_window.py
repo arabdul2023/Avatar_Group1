@@ -23,6 +23,8 @@ from sftp import fileTransfer as ft
 
 def transfer_data_window(window1):
 
+    sftp_client = ft()  # Creates an instance of fileTransfer
+    
     #====================================
     #LAYOUT
     #====================================
@@ -137,6 +139,11 @@ def transfer_data_window(window1):
     # Clear button should not be functional while connected to the server
     def logged_in():
         transfer_data_window['-connectivity_text-'].update('Connected', text_color='dark green')
+        transfer_data_window['-host_input-'].update(disabled=True)
+        transfer_data_window['-name_input-'].update(disabled=True)
+        transfer_data_window['-key_input-'].update(disabled=True)
+        transfer_data_window['-pass_input-'].update(disabled=True)
+        transfer_data_window['-login_button-'].update(disabled=True)
         transfer_data_window['-disconnect_button-'].update(disabled=False)
         transfer_data_window['-clear_login_data_button-'].update(disabled=True)
         enable_origin_directory()
@@ -144,18 +151,18 @@ def transfer_data_window(window1):
     # Login Button Functionality
     # Use input data to attempt login; If login successful, run logged_in; If unsuccessful, display message to user
     def attempt_login():
-        #ft.host = values['-host_input-']
-        #ft.username = values['-name_input-']
-        #ft.private_key = values['-key_input-']
-        #ft.private_key_pass = values['-pass_input-']
-        #ft.port = 22
-        #ft.connect(ft)
-        
-        login_successful = True
-        if login_successful:
-            logged_in()
+        try:
+            sftp_client.host = values['-host_input-']
+            sftp_client.username = values['-name_input-']
+            sftp_client.private_key = values['-key_input-']
+            sftp_client.private_key_pass = values['-pass_input-']
+            #print(sftp_client.host)
+            sftp_client.connect()
+        except Exception as e:
+            sg.PopupError(f"SFTP Connection Error: {e}")
         else:
-            sg.popup('Unable to connect')        
+            sg.popup('Connection successful')   
+            logged_in()
     # Clear Button Functionality
     # Clear all data input fields, disable Login Button, and reset focus to host_input
     def clear_login_inputs():
@@ -168,9 +175,18 @@ def transfer_data_window(window1):
     # Disconnet Button Functionality
     # Clear all input data fields, disable directories, display Disconnected, disable Disconnect Button and enable Clear Login Data Button
     def disconnect():
+        if sftp_client.serverconn is not None:
+            sftp_client.serverconn.close()
+        else:
+            sg.popup('Never Connected')
+
         clear_login_inputs()
         disable_origin_directory()
         disable_target_directory()
+        transfer_data_window['-host_input-'].update(disabled=False)
+        transfer_data_window['-name_input-'].update(disabled=False)
+        transfer_data_window['-key_input-'].update(disabled=False)
+        transfer_data_window['-pass_input-'].update(disabled=False) 
         transfer_data_window['-connectivity_text-'].update('Disconnected', text_color='dark red')
         transfer_data_window['-disconnect_button-'].update(disabled=True)
         transfer_data_window['-clear_login_data_button-'].update(disabled=False)
@@ -185,6 +201,35 @@ def transfer_data_window(window1):
             transfer_data_window[button].update(disabled=False)
         else:
             transfer_data_window[button].update(disabled=True)
+    # disable directory guis except "Clear"
+    def disable_directory_guis(field, browse_button, select_button):
+        transfer_data_window[field].update(disabled=True)
+        transfer_data_window[browse_button].update(disabled=True)
+        transfer_data_window[select_button].update(disabled=True)
+    # Select Button Functionality
+    # If valid directory, display selected directory and check if both directories are selected
+    def select_directory(field, text, browse_button, select_button):
+        if is_valid_directory(values[field]):
+            newly_opened_directory = f'{values[field][-52:]}'
+            transfer_data_window[text].update("..." + newly_opened_directory)
+            disable_directory_guis(field, browse_button, select_button)
+            check_selected_directories() # to enable transfer button
+        else:
+            sg.popup('Invalid directory. Please select a valid directory.')
+            transfer_data_window[field].update('')
+            transfer_data_window[select_button].update(disabled=True)
+            check_selected_directories() # to disable transfer button
+    # Directory Clear Button Functionality
+    # Clear directory input, disable Select Button, erase selected directory, check selected directories to disable Transfer Button
+    def clear_directory_field(field, browse_button, select_button, text):
+        transfer_data_window[field].update('')
+        transfer_data_window[field].update(disabled=False)
+        transfer_data_window[browse_button].update(disabled=False)
+        transfer_data_window[select_button].update(disabled=False)
+        transfer_data_window[text].update('')
+        check_selected_directories()
+
+    # TRANSFER FUNCTIONS #
     # Enable Transfer Button 
     def enable_transfer_button():
         transfer_data_window['-transfer_button-'].update(disabled=False)
@@ -197,30 +242,13 @@ def transfer_data_window(window1):
             enable_transfer_button()
         else:
             disable_transfer_button()
-    # Select Button Functionality
-    # If valid directory, display selected directory and check if both directories are selected
-    def select_directory(field, text, button):
-        if is_valid_directory(values[field]):
-            newly_opened_directory = f'{values[field][-52:]}'
-            transfer_data_window[text].update("..." + newly_opened_directory)
-            check_selected_directories()
-        else:
-            sg.popup('Invalid directory. Please select a valid directory.')
-            transfer_data_window[field].update('')
-            transfer_data_window[button].update(disabled=True)
-            check_selected_directories()
-    # Directory Clear Button Functionality
-    # Clear directory input, disable Select Button, erase selected directory, check selected directories to disable Transfer Button
-    def clear_directory_field(field, button, text):
-        transfer_data_window[field].update('')
-        transfer_data_window[button].update(disabled=True)
-        transfer_data_window[text].update('')
-        check_selected_directories()
-
     # This will contain the functionaly for the Transfer Button
     def transfer_file(origin_dir, target_dir):
-        print('ran')
-        #ft.transfer(ft, origin_dir, target_dir) 
+        try:
+            sftp_client.transfer(origin_dir, target_dir)
+            sg.popup('File transfer successful!')
+        except Exception as e:
+            sg.popup_error(f'File transfer failed: {str(e)}')
          
     # Event loop    
     while True:
@@ -239,19 +267,19 @@ def transfer_data_window(window1):
         elif event in ('-origin_dir_input-'):
             check_directory_field('-origin_dir_input-', '-origin_select_button-')
         elif event == '-origin_select_button-':
-            select_directory('-origin_dir_input-', '-origin_directory_text-', '-origin_select_button-')
+            select_directory('-origin_dir_input-', '-origin_directory_text-', '-origin_browse_button-', '-origin_select_button-')
         elif event == '-clear_origin_directory_button-':
-            clear_directory_field('-origin_dir_input-', '-origin_select_button-', '-origin_directory_text-')
+            clear_directory_field('-origin_dir_input-', '-origin_browse_button-', '-origin_select_button-', '-origin_directory_text-')
         elif event in ('-target_dir_input-'):
             check_directory_field('-target_dir_input-', '-target_select_button-')
         elif event == '-target_select_button-':
-            select_directory('-target_dir_input-', '-target_directory_text-', '-target_select_button-')
+            select_directory('-target_dir_input-', '-target_directory_text-', '-target_browse_button-', '-target_select_button-')
         elif event == '-clear_target_directory_button-':
-            clear_directory_field('-target_dir_input-', '-target_select_button-', '-target_directory_text-')
+            clear_directory_field('-target_dir_input-', '-target_browse_button-', '-target_select_button-', '-target_directory_text-')
         elif event == '-transfer_button-':
             result = sg.popup('Do you want to proceed?', title='Verify', button_type=sg.POPUP_BUTTONS_OK_CANCEL)
             if result == 'OK':
-                transfer_file()
+                transfer_file(values['-origin_dir_input-'], values['-target_dir_input-'])
         elif event == "-home_button-":   # return to start screen
             result = sg.popup('Do you want to proceed?', title='Verify', button_type=sg.POPUP_BUTTONS_OK_CANCEL)
             if result == 'OK':
