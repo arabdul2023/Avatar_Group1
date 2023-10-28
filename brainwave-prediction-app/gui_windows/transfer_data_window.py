@@ -24,6 +24,8 @@ from sftp import fileTransfer as ft
 def transfer_data_window(window1):
 
     sftp_client = ft()  # Creates an instance of fileTransfer
+
+
     
     #====================================
     #LAYOUT
@@ -43,8 +45,9 @@ def transfer_data_window(window1):
         [sg.Text('Login before selecting a directory', font=('Arial', info_text_size))],
         [sg.Text('Host:\t   '), sg.Input('', size=(57,1), key='-host_input-', enable_events=True)],
         [sg.Text('User Name:'), sg.Input('', size=(57,1), key='-name_input-', enable_events=True)],
-        [sg.Text('Private Key:'), sg.Input('', size=(57,1), key='-key_input-', password_char='*', enable_events=True)],
-        [sg.Text('Password:   '), sg.Input('', size=(57,1), key='-pass_input-', password_char='*', enable_events=True)],
+        [sg.Text('Private Key:'), sg.Input('', size=(57,1), key='-key_input-', password_char='*', enable_events=True), 
+            sg.FileBrowse(target='-key_input-', size=(10,1), disabled=False, key="key_browse")],
+        [sg.Text('Passcode:   '), sg.Input('', size=(57,1), key='-pass_input-', password_char='*', enable_events=True)],
         # Buttons
         [sg.Button('Login', size=(10,1), pad=(5, 5), disabled=True, key='-login_button-'),
             sg.Button('Disconnect', size=(10,1), pad=(5,5), disabled=True, key='-disconnect_button-'),
@@ -103,6 +106,18 @@ def transfer_data_window(window1):
     #====================================    
 
     # LOGIN DATA FUNCTIONS #
+    
+#    def read_private_key_file(file_path):
+#        try:
+#            with open(file_path, 'r') as private_key_file:
+#                private_key = private_key_file.read()
+#                return private_key
+#        except FileNotFoundError:
+#            print("File not found. Please check the file path.")
+#        except Exception as e:
+#            print(f"An error occurred: {str(e)}")
+#        return None
+    
     # If all fields of login data are NOT blank, activate Login Button; Else, deactivate Login Button
     def check_login_fields():
         if (values['-host_input-'] != '') and (values['-name_input-'] != '') and (values['-key_input-'] != '') and (values['-pass_input-'] != ''):
@@ -154,6 +169,11 @@ def transfer_data_window(window1):
         try:
             sftp_client.host = values['-host_input-']
             sftp_client.username = values['-name_input-']
+            
+#            file_path = values["-key_input-"]
+#            private_key = read_private_key_file(file_path)
+#            sftp_client.private_key = private_key
+
             sftp_client.private_key = values['-key_input-']
             sftp_client.private_key_pass = values['-pass_input-']
             #print(sftp_client.host)
