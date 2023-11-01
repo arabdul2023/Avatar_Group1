@@ -1,4 +1,8 @@
 """
+Daniel Leone
+Anuoluwapo Abdul
+Kiran Kadariya
+
 This module provides the user with the ability to transfer local files to the connected server.
 The flow is controlled as follows: connect to the server, select origin and destination directories, transfer.
 
@@ -8,9 +12,6 @@ the popup for the Home Button is open, the popup will persist and can continue t
 Note: Primary function of connecting to the server and transfer the files has not been established yet.
 -See Line 146 function attempt_login for logging into the server
 -See Line 170 function disconnect for disconnecting from server
--See Line 180 (Optional) function is_valid_directory possibly include a check to verify file type .svc included 
--See Line 202 function select_directory currently only GUI, the actual directory value needs to be usable
--See Line 214 function clear_directory_field currently only GUI, the actual directory needs to be cleared
 -See Line 221 function transfer_file needs to be able to transfer 
 """
 
@@ -24,8 +25,6 @@ from sftp import fileTransfer as ft
 def transfer_data_window(window1):
 
     sftp_client = ft()  # Creates an instance of fileTransfer
-
-
     
     #====================================
     #LAYOUT
@@ -253,7 +252,7 @@ def transfer_data_window(window1):
         transfer_data_window[field].update('')
         transfer_data_window[field].update(disabled=False)
         transfer_data_window[browse_button].update(disabled=False)
-        transfer_data_window[select_button].update(disabled=False)
+        transfer_data_window[select_button].update(disabled=True)
         transfer_data_window[text].update('')
         check_selected_directories()
 
